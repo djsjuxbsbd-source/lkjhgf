@@ -1,75 +1,13 @@
+
 import os
 import json
 from flask import Flask, request
 import requests
 from html import escape
-import threading
-import random
-import time
-import requests
 
-# ======= SELF-ACTIVITY: эмуляция активности от случайных пользователей =======
-def start_self_activity():
-    def self_activity_loop():
-        # Список фиктивных пользователей (можно добавить свои/заменить)
-        FAKE_USERS = [
-            {"id": 111111111, "first_name": "Ivan", "last_name": "Petrov"},
-            {"id": 222222222, "first_name": "Anna", "last_name": "Ivanova"},
-            {"id": 333333333, "first_name": "Test", "last_name": "User"},
-            {"id": 444444444, "first_name": "Demo", "last_name": "Guy"},
-        ]
-        # Возможные кнопки (добавляй свои, какие нужны)
-        CALLBACKS = [
-            "consult", "consult_30", "consult_60", "support", "support_1", "support_2", "support_3",
-            "support_pay", "support_back", "regclose", "fop_register", "fop_register_pay",
-            "fop_close", "fop_close_pay", "reports", "report_submit", "report_submit_contacts",
-            "report_tax_check", "tax_check_contacts", "tax_check_pay", "reports_back",
-            "prro", "prro_register", "prro_register_pay", "prro_pay", "prro_close", "prro_back"
-        ]
-        WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Например, https://mysite.com/webhook/ТОКЕН
-        if not WEBHOOK_URL:
-            WEBHOOK_URL = f"http://127.0.0.1:5000/webhook/{TOKEN}"  # для локалки
 
-        cnt = 0
-        while True:
-            time.sleep(random.randint(60, 600))  # раз в 1-10 минут
-            cnt += 1
-            user = random.choice(FAKE_USERS)
-            if random.choice([True, False]):
-                # Имитация обычного сообщения (например /start)
-                msg_text = random.choice(["/start", "Меню", "Повернутися в меню"])
-                fake_update = {
-                    "message": {
-                        "chat": {"id": user["id"]},
-                        "text": msg_text,
-                        "from": {"id": user["id"], "first_name": user["first_name"], "last_name": user["last_name"]}
-                    }
-                }
-                print(f"[Self-activity {cnt}] user_id={user['id']} -> msg: {msg_text}")
-            else:
-                # Имитация нажатия кнопки
-                cb_data = random.choice(CALLBACKS)
-                fake_update = {
-                    "callback_query": {
-                        "id": str(random.randint(1000000, 9999999)),
-                        "from": {"id": user["id"], "first_name": user["first_name"], "last_name": user["last_name"]},
-                        "message": {
-                            "chat": {"id": user["id"]},
-                            "message_id": random.randint(1000, 9999),
-                            "text": "(test inline keyboard)"
-                        },
-                        "data": cb_data
-                    }
-                }
-                print(f"[Self-activity {cnt}] user_id={user['id']} -> callback: {cb_data}")
 
-            try:
-                resp = requests.post(WEBHOOK_URL, json=fake_update, timeout=8)
-                print(f"[Self-activity {cnt}] HTTP {resp.status_code}")
-            except Exception as e:
-                print(f"[Self-activity ERROR] {e}")
 
-    threading.Thread(target=self_activity_loop, daemon=True).start()
 # ======= Конфигурация =======
 TOKEN = os.getenv("API_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
@@ -840,5 +778,4 @@ def index():
     return "OK", 200
 
 if __name__ == "__main__":
-    start_self_activity()  # <---- добавили запуск имитации
     app.run("0.0.0.0", port=int(os.getenv("PORT", "5000")))
